@@ -5,6 +5,7 @@ import Room from "./Components/Room";
 // import Home from "./Components/Home";
 import Sign from "./Views/Sign/Sign";
 import CreateServer from "./Components/CreateServer";
+import CreateChannel from "./Components/CreateChannel";
 
 const routes = [
   {
@@ -22,6 +23,10 @@ const routes = [
           {
             path: "channel/:channelId",
             element: <Room />,
+          },
+          {
+            path: "createChannel",
+            element: <CreateChannel />,
           },
         ],
       },

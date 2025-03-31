@@ -64,7 +64,7 @@ router.post("/login", async (req, res) => {
 router.get("/me", authMiddleware, async (req, res) => {
   // console.log(req.cookies);
   const token = req.cookies.token;
-  console.log("authMiddleware");
+  // console.log("authMiddleware");
   const user = await User.findById(req.user.userId).select("-passwordHash");
   res.json(user);
 });
