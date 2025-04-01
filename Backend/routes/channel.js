@@ -1,22 +1,31 @@
 import express from "express";
 import authMiddleware from "../middleware/authMiddleware.js";
 import Channel from "../models/Channel.js";
+import Server from "../models/Server.js";
 
 const router = express.Router();
 
 // 创建频道
 router.post("/:serverId/createChannel", authMiddleware, async (req, res) => {
-  const { name, type } = req.body;
+  const { name, type, userId } = req.body;
   const { serverId } = req.params;
-  console.log(name);
-  console.log(type);
-  console.log(serverId);
+  // console.log(name);
+  // console.log(type);
+  // console.log(serverId);
 
   if (!name) {
     return res.status(400).json({ message: "频道名称不能为空" });
   }
 
   try {
+    const server = await Server.findById(serverId);
+    if (!server) {
+      return res.status(404).json({ message: "服务器未找到" });
+    }
+    if (server.owner.toString() !== userId) {
+      return res.status(403).json({ message: "只有服务器所有者可以创建频道" });
+    }
+
     const existingChannel = await Channel.findOne({ name, server: serverId });
     if (existingChannel) {
       return res.status(500).json({ message: "该频道名称已被使用" });

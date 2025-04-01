@@ -22,7 +22,6 @@ const MessageList = ({
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    // 每次组件更新时，确保滚动到底部
     scrollToBottom();
   }, [messages]);
 
@@ -57,7 +56,7 @@ const MessageList = ({
               // avatar={<Avatar>{msg.sender.username[0].toUpperCase()}</Avatar>}
               avatar={
                 <Avatar
-                  src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${msg.sender._id}`}
+                  src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${msg.sender._id}`}
                 />
               }
               title={msg.sender.username}

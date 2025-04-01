@@ -19,7 +19,7 @@ const Register = () => {
       localStorage.setItem("token", res.data.token);
       navigate("/home");
     } catch (error: any) {
-      messageApi.error(error.response?.data?.message || "注册失败");
+      messageApi.error(error.response?.data?.message || "Signup failed");
     }
   };
 
@@ -29,21 +29,27 @@ const Register = () => {
       <Form.Item
         label="用户名"
         name="username"
-        rules={[{ required: true, message: "请输入用户名" }]}
+        rules={[{ required: true, message: "Please text username" }]}
       >
         <Input />
       </Form.Item>
       <Form.Item
-        label="邮箱"
+        label="Email"
         name="email"
-        rules={[{ required: true, type: "email", message: "请输入有效的邮箱" }]}
+        rules={[
+          {
+            required: true,
+            type: "email",
+            message: "Pleas text a valid e-mail",
+          },
+        ]}
       >
         <Input />
       </Form.Item>
       <Form.Item
-        label="密码"
+        label="Password"
         name="password"
-        rules={[{ required: true, message: "请输入密码" }]}
+        rules={[{ required: true, message: "Please text your password" }]}
       >
         <Input.Password />
       </Form.Item>
@@ -52,7 +58,7 @@ const Register = () => {
         htmlType="submit"
         style={{ display: "block", margin: "0 auto" }}
       >
-        注册
+        SignUp
       </Button>
     </Form>
   );

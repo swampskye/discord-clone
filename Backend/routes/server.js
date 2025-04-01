@@ -1,9 +1,11 @@
 import express from "express";
 import multer from "multer";
+import { nanoid } from "nanoid";
 import path from "path";
 import Server from "../models/Server.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import channelRoutes from "./channel.js";
+
 const router = express.Router();
 
 // 配置 multer 用于处理头像上传
@@ -76,6 +78,73 @@ router.get("/servers", authMiddleware, async (req, res) => {
     // console.log(userServers);
     res.json(userServers);
   } catch (error) {
+    res.status(500).json({ message: "服务器错误" });
+  }
+});
+
+router.get("/:serverId/users", authMiddleware, async (req, res) => {
+  try {
+    const server = await Server.findById(req.params.serverId).populate({
+      path: "members",
+      select: "-passwordHash",
+    });
+
+    if (!server) {
+      return res.status(404).json({ message: "服务器未找到" });
+    }
+
+    res.json({ users: server.members });
+  } catch (error) {
+    console.error("获取服务器成员失败:", error);
+    res.status(500).json({ message: "服务器错误" });
+  }
+});
+
+// 生成新的邀请链接
+router.post("/:serverId/generate-invite", async (req, res) => {
+  try {
+    const { serverId } = req.params;
+    const inviteCode = nanoid(10); // 生成 10 位唯一邀请码
+
+    const server = await Server.findByIdAndUpdate(
+      serverId,
+      { inviteCode },
+      { new: true }
+    );
+    if (!server) {
+      return res.status(404).json({ message: "服务器未找到" });
+    }
+
+    res.json({ inviteCode });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "服务器错误" });
+  }
+});
+
+// 通过邀请码加入服务器
+router.post("/join/:inviteCode", async (req, res) => {
+  try {
+    const { inviteCode } = req.params;
+    const { userId } = req.body;
+    // console.log(inviteCode);
+    // console.log(userId);
+
+    const server = await Server.findOne({ inviteCode });
+    if (!server) {
+      return res.status(404).json({ message: "邀请码无效" });
+    }
+
+    if (server.members.includes(userId)) {
+      return res.status(400).json({ message: "你已经在该服务器中" });
+    }
+
+    server.members.push(userId);
+    await server.save();
+
+    res.json({ message: "加入成功", server });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "服务器错误" });
   }
 });

@@ -12,16 +12,16 @@ const Home = () => {
       .get("http://localhost:5555/api/auth/me", { withCredentials: true }) // 发送请求检查用户状态
       .then(() => {
         navigate("/home"); // 已登录，跳转到 /home
-        console.log("home");
+        // console.log("home");
       })
       .catch(() => {
-        navigate("/sign"); // 未登录，跳转到 /login
-        console.log("sign");
+        navigate("/sign"); // 未登录，跳转到 /sign
+        // console.log("sign");
       })
       .finally(() => setLoading(false));
   }, [navigate]);
 
-  return loading ? <div>Loading...</div> : null; // 防止闪烁
+  return loading ? <div>Loading...</div> : null;
 };
 
 export default Home;

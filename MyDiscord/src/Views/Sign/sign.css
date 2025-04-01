@@ -12,9 +12,9 @@
 }
 
 a {
-  display: block;
+  /* display: block; */
   margin-top: 20px;
-  text-align: center;
+  /* text-align: center; */
   color: #1890ff;
   text-decoration: none;
 }

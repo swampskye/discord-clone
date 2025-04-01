@@ -18,25 +18,25 @@ const CreateServer = () => {
           withCredentials: true,
         }
       );
-      message.success("服务器创建成功");
+      message.success("Server Created");
       const path = `/home/server/${res.data.server._id}`;
       onCreate(path);
     } catch (error: any) {
-      message.error(error.response?.data?.message || "服务器创建失败");
+      message.error(error.response?.data?.message || "Some Errors happend");
     }
   };
 
   return (
     <Form layout="vertical" onFinish={onFinish}>
       <Form.Item
-        label="服务器名称"
+        label="Server Name"
         name="name"
-        rules={[{ required: true, message: "请输入服务器名称" }]}
+        rules={[{ required: true, message: "Please text Server Name" }]}
       >
         <Input />
       </Form.Item>
       <Button type="primary" htmlType="submit">
-        创建服务器
+        Create A Server
       </Button>
     </Form>
   );

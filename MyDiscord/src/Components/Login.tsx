@@ -13,10 +13,10 @@ const Login = () => {
         { withCredentials: true }
       );
       localStorage.setItem("token", res.data.token);
-      message.success("登录成功");
+      message.success("Login Successfully");
       navigate("/home");
     } catch (error: any) {
-      messageApi.error(error.response?.data?.message || "登录失败");
+      messageApi.error(error.response?.data?.message || "Login failed");
     }
   };
 
@@ -24,16 +24,22 @@ const Login = () => {
     <Form layout="vertical" onFinish={onFinish}>
       {contextHolder}
       <Form.Item
-        label="邮箱"
+        label="Email"
         name="email"
-        rules={[{ required: true, type: "email", message: "请输入有效的邮箱" }]}
+        rules={[
+          {
+            required: true,
+            type: "email",
+            message: "Please text a valid e-mail",
+          },
+        ]}
       >
         <Input />
       </Form.Item>
       <Form.Item
-        label="密码"
+        label="Password"
         name="password"
-        rules={[{ required: true, message: "请输入密码" }]}
+        rules={[{ required: true, message: "Please text your password" }]}
       >
         <Input.Password />
       </Form.Item>
@@ -42,7 +48,7 @@ const Login = () => {
         htmlType="submit"
         style={{ display: "block", margin: "0 auto" }}
       >
-        登录
+        Login
       </Button>
     </Form>
   );

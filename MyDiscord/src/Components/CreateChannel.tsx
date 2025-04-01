@@ -17,6 +17,7 @@ const CreateChannel = () => {
         {
           name: values.name,
           type: values.type,
+          userId: localStorage.getItem("userId"),
           serverId: serverId,
         },
         {
@@ -26,11 +27,11 @@ const CreateChannel = () => {
           withCredentials: true,
         }
       );
-      messageApi.success("频道创建成功");
+      messageApi.success("Channel Created");
       const path = `/home/server/${res.data.server}/channel/${res.data._id}`;
       onCreate(path);
     } catch (error: any) {
-      messageApi.error(error.response?.data?.message || "频道创建失败");
+      messageApi.error(error.response?.data?.message || "Some Errors happend");
     }
   };
 
@@ -38,20 +39,20 @@ const CreateChannel = () => {
     <Form layout="vertical" onFinish={onFinish}>
       {messageContext}
       <Form.Item
-        label="频道名称"
+        label="Channel Name"
         name="name"
-        rules={[{ required: true, message: "请输入频道名称" }]}
+        rules={[{ required: true, message: "Please Text a Name" }]}
       >
         <Input />
       </Form.Item>
-      <Form.Item name="type" label="频道类型">
+      <Form.Item name="type" label="Channel Type">
         <Select defaultValue="text">
-          <Select.Option value="text">文本频道</Select.Option>
-          <Select.Option value="voice">语音频道</Select.Option>
+          <Select.Option value="text">Text Channel</Select.Option>
+          <Select.Option value="voice">Voice&Video Channel</Select.Option>
         </Select>
       </Form.Item>
       <Button type="primary" htmlType="submit">
-        创建频道
+        Create A Channel
       </Button>
     </Form>
   );

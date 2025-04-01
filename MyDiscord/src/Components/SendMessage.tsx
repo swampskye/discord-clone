@@ -21,10 +21,10 @@ const SendMessage = ({ channelId }: { channelId: string }) => {
       <Input
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="输入消息..."
+        placeholder="Input Message..."
       />
       <Button type="primary" size="large" onClick={sendMessage}>
-        发送
+        Send
       </Button>
     </div>
   );

@@ -6,6 +6,7 @@ const serverSchema = new Schema(
     owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     avatar: { type: String },
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // 用户与服务器的关联
+    inviteCode: { type: String, unique: true },
   },
   { timestamps: true }
 );

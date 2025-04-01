@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
-import { Menu, MenuProps, Button, message } from "antd";
+import { Menu, MenuProps, Button, message, List, Avatar } from "antd";
 import {
   TeamOutlined,
   CloudServerOutlined,
@@ -31,6 +31,7 @@ const DiscordLayout: React.FC = () => {
   const [messageApi, messageContext] = message.useMessage();
   const [serverItems, setServerItems] = useState<MenuItem[]>([]);
   const [channelItems, setChannelItems] = useState<MenuItem[]>([]);
+  const [usersInServer, setUsersInServer] = useState([]);
 
   const navigateTo = useNavigate();
   const { serverId } = useParams();
@@ -86,7 +87,7 @@ const DiscordLayout: React.FC = () => {
     const fetchChannels = async () => {
       try {
         const data = await axios.get(
-          `http://localhost:5555/api/server//${serverId}/channels`,
+          `http://localhost:5555/api/server/${serverId}/channels`,
           { withCredentials: true }
         );
         // console.log(data.data);
@@ -107,7 +108,25 @@ const DiscordLayout: React.FC = () => {
         // console.error(error);
       }
     };
-    fetchChannels();
+    if (serverId) fetchChannels();
+  }, [serverId]);
+
+  // fetch users in current server
+  useEffect(() => {
+    const fetchUsersFromServer = async () => {
+      try {
+        const res: any = await axios.get(
+          `http://localhost:5555/api/server/${serverId}/users`,
+          {
+            withCredentials: true,
+          }
+        );
+        setUsersInServer(res.data.users);
+      } catch (err: any) {
+        messageApi.error("err happened");
+      }
+    };
+    if (serverId) fetchUsersFromServer();
   }, [serverId]);
 
   return (
@@ -124,7 +143,7 @@ const DiscordLayout: React.FC = () => {
         }}
       >
         <Button
-          style={{ margin: 3, backgroundColor: "#95a8e2" }}
+          style={{ backgroundColor: "#95a8e2" }}
           onClick={() => navigateTo("/home/createServer")}
         >
           <PlusCircleOutlined />
@@ -149,7 +168,7 @@ const DiscordLayout: React.FC = () => {
         }}
       >
         <Button
-          style={{ margin: 3, backgroundColor: "#95a8e2" }}
+          style={{ backgroundColor: "#95a8e2" }}
           onClick={goToCreateChannel}
         >
           <PlusCircleOutlined />
@@ -176,24 +195,54 @@ const DiscordLayout: React.FC = () => {
       >
         <Outlet />
       </div>
-      {/* 在线用户列表 */}
-      <div
-        style={{
-          width: 250,
-          background: "#2f3136",
-          display: "flex",
-          flexDirection: "column",
-          marginLeft: "auto",
-        }}
-      >
-        <Menu
-          mode="inline"
-          theme="dark"
-          style={{ height: "100%", borderLeft: 0 }}
+      {/* Server用户列表 */}
+      {serverId && (
+        <div
+          style={{
+            width: 250,
+            background: "#2f3136",
+            display: "flex",
+            flexDirection: "column",
+            marginLeft: "auto",
+          }}
         >
-          <Menu.Item icon={<TeamOutlined />}>在线用户</Menu.Item>
-        </Menu>
-      </div>
+          <Menu
+            mode="inline"
+            theme="dark"
+            style={{ height: "100%", borderLeft: 0 }}
+          >
+            <Menu.Item icon={<TeamOutlined />}>
+              users in current server
+            </Menu.Item>
+            <List
+              dataSource={usersInServer}
+              renderItem={(user) => {
+                return (
+                  <List.Item onClick={() => console.log("haha")}>
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar
+                          src={`https://api.dicebear.com/9.x/adventurer/svg?seed=${user._id}`}
+                        />
+                      }
+                      title={
+                        <span style={{ padding: "0 0px", color: "white" }}>
+                          {user.username}
+                        </span>
+                      }
+                      description={
+                        <span style={{ padding: "0 0px", color: "white" }}>
+                          {user.email}
+                        </span>
+                      }
+                    />
+                  </List.Item>
+                );
+              }}
+            />
+          </Menu>
+        </div>
+      )}
     </div>
   );
 };

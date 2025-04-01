@@ -6,6 +6,8 @@ import Room from "./Components/Room";
 import Sign from "./Views/Sign/Sign";
 import CreateServer from "./Components/CreateServer";
 import CreateChannel from "./Components/CreateChannel";
+import Server from "./Components/Server";
+import Join from "./Components/Join";
 
 const routes = [
   {
@@ -13,12 +15,16 @@ const routes = [
     element: <Sign />,
   },
   {
+    path: "join/:inviteCode",
+    element: <Join />,
+  },
+  {
     path: "/home",
     element: <DiscordLayout />,
     children: [
       {
         path: "server/:serverId",
-        element: <Comp />,
+        element: <Server />,
         children: [
           {
             path: "channel/:channelId",
