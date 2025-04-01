@@ -47,7 +47,11 @@ const Register = () => {
       >
         <Input.Password />
       </Form.Item>
-      <Button type="primary" htmlType="submit">
+      <Button
+        type="primary"
+        htmlType="submit"
+        style={{ display: "block", margin: "0 auto" }}
+      >
         注册
       </Button>
     </Form>

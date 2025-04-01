@@ -37,7 +37,11 @@ const Login = () => {
       >
         <Input.Password />
       </Form.Item>
-      <Button type="primary" htmlType="submit">
+      <Button
+        type="primary"
+        htmlType="submit"
+        style={{ display: "block", margin: "0 auto" }}
+      >
         登录
       </Button>
     </Form>

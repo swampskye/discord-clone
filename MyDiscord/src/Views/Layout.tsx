@@ -60,7 +60,7 @@ const DiscordLayout: React.FC = () => {
           // search by userId
           { withCredentials: true }
         );
-        console.log(data.data);
+        // console.log(data.data);
         const res = data.data;
         const items: any[] = [];
         res.map((element: any) => {
@@ -72,10 +72,10 @@ const DiscordLayout: React.FC = () => {
             )
           );
         });
-        console.log(items);
+        // console.log(items);
         setServerItems(items);
       } catch (error) {
-        console.error(error);
+        // console.error(error);
       }
     };
     fetchServers();
@@ -101,10 +101,10 @@ const DiscordLayout: React.FC = () => {
             )
           );
         });
-        console.log(items);
+        // console.log(items);
         setChannelItems(items);
       } catch (error) {
-        console.error(error);
+        // console.error(error);
       }
     };
     fetchChannels();

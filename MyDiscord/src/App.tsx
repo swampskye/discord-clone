@@ -13,13 +13,11 @@ function App() {
     axios
       .get("http://localhost:5555/api/auth/me", { withCredentials: true }) // 检查用户是否登录
       .then(() => {
-        // 用户已登录，不需要跳转
-        console.log("User is logged in");
+        // console.log("User is logged in");
       })
       .catch(() => {
-        // 用户未登录，跳转到登录页面
-        console.log("User is not logged in");
-        navigate("/"); // 跳转至 /login
+        // console.log("User is not logged in");
+        navigate("/");
       });
   }, [navigate]);
 

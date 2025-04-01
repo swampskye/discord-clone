@@ -51,9 +51,6 @@ router.post(
   async (req, res) => {
     try {
       const { name } = req.body;
-      // const avatarUrl = req.file ? `/uploads/${req.file.filename}` : "";
-      // const avatarUrl = Date.now();
-
       const newServer = new Server({
         name,
         avatarUrl: "defaultAvatarUrl",
