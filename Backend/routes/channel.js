@@ -56,4 +56,92 @@ router.get("/:serverId/channels", authMiddleware, async (req, res) => {
   }
 });
 
+// checkVoiceRoom
+router.get("/channel/:channelId", authMiddleware, async (req, res) => {
+  const { channelId } = req.params;
+  // console.log(channelId);
+
+  try {
+    const channel = await Channel.findById(channelId);
+    // const channel = await Channel.find({ server: serverId });
+    res.json(channel);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// 加入语音频道
+router.post("/:channelId/voice/join", authMiddleware, async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const userId = req.body.userId;
+    // console.log(userId);
+
+    const channel = await Channel.findById(channelId);
+    if (!channel) return res.status(404).json({ message: "频道未找到" });
+
+    if (channel.type !== "voice") {
+      return res.status(400).json({ message: "此频道不是语音频道" });
+    }
+
+    if (!channel.participants?.includes(userId)) {
+      channel.participants?.push(userId);
+      await channel.save();
+    }
+
+    res.json({
+      message: "加入语音频道成功",
+      participants: channel.participants,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "服务器错误" });
+  }
+});
+
+// 离开语音频道
+router.post("/:channelId/voice/leave", authMiddleware, async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const userId = req.body.userId;
+
+    const channel = await Channel.findById(channelId);
+    if (!channel) return res.status(404).json({ message: "频道未找到" });
+
+    if (channel.type !== "voice") {
+      return res.status(400).json({ message: "此频道不是语音频道" });
+    }
+
+    channel.participants = channel.participants?.filter(
+      (id) => id.toString() !== userId
+    );
+    await channel.save();
+
+    res.json({
+      message: "离开语音频道成功",
+      participants: channel.participants,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "服务器错误" });
+  }
+});
+
+//获取语音频道的在线用户
+router.get("/:channelId/voice/participants", async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const channel = await Channel.findById(channelId).populate(
+      "participants",
+      "username email"
+    );
+
+    if (!channel) return res.status(404).json({ message: "频道未找到" });
+    if (channel.type !== "voice")
+      return res.status(400).json({ message: "此频道不是语音频道" });
+
+    res.json({ participants: channel.participants });
+  } catch (error) {
+    res.status(500).json({ message: "服务器错误" });
+  }
+});
+
 export default router;

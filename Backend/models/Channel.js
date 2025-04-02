@@ -27,6 +27,7 @@ const channelSchema = new Schema(
       ref: "Server",
       required: true,
     },
+    participants: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   },
   { timestamps: true }
 );

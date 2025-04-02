@@ -3,7 +3,7 @@ import { List, Avatar } from "antd";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-const socket = io("http://localhost:5555");
+const socket = io("http://localhost:5555/text");
 
 interface Message {
   _id: string;

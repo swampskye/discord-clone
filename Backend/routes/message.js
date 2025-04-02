@@ -40,7 +40,7 @@ router.post("/:channelId/sendMessage", authMiddleware, async (req, res) => {
     newMessage.sender = user;
     await newMessage.save();
     // 通过 WebSocket 广播新消息
-    req.io.to(channelId).emit("newMessage", newMessage);
+    req.textChatNamespace.to(channelId).emit("newMessage", newMessage);
     res.status(201).json(newMessage);
   } catch (error) {
     console.log(error);
