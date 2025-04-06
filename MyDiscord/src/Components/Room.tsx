@@ -45,7 +45,7 @@ const Room = () => {
       )}
       <h2 style={{ textAlign: "center" }}>Channel-{channelId}</h2>
       {/* Text Chat Component */}
-      <div>
+      {/* <div>
         <div
           ref={messageListRef}
           style={{
@@ -65,7 +65,7 @@ const Room = () => {
         <div style={{ margin: "20px" }}>
           <SendMessage channelId={channelId || "defaultChannelId"} />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
