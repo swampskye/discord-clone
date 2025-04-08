@@ -1,0 +1,29 @@
+name: CICD
+
+on:
+  push:
+    branches: [main]
+
+permissions: 
+  contents: write
+
+jobs: 
+  npm-build:
+    name: My-npm-build
+    runs-on: ubuntu-latest
+  
+    steps:
+    - name: My-read-from-repo
+      uses: actions/checkout@v4
+
+    - name: My-npm-install&npm-run-build
+      run:
+        npm i
+        npm run build
+
+    - name:
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branches: gh-pages
+        folder: build
+    
