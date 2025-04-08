@@ -13,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // 或你的前端地址
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
@@ -38,7 +38,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/server", serverRoutes);
 app.use("/api/channel", messageRoutes);
 
-// socket.io namespace
+// text chat socket namespace
 textChatNamespace.on("connection", (socket) => {
   // console.log("用户连接:", socket.id);
   socket.on("joinChannel", (channelId) => {
@@ -51,44 +51,70 @@ textChatNamespace.on("connection", (socket) => {
   });
 });
 
+// webrtc signal socket namespace
+const users = {};
+const socketToRoom = {};
+const MaxUserNumber = 10;
 voiceChatNamespace.on("connection", (socket) => {
   console.log(`🟢 语音聊天连接: ${socket.id}`);
 
-  socket.on("joinVoiceChannel", ({ channelId, userId }) => {
-    // console.log(channelId);
-    // console.log(userId);
-    socket.join(channelId);
-    console.log(`用户 ${userId} 加入语音频道: ${channelId}`);
-    voiceChatNamespace.to(channelId).emit("userJoined", userId);
+  socket.on("join room", (channelId) => {
+    // socket.join(channelId);
+    if (users[channelId]) {
+      const length = users[channelId].length;
+      if (length === MaxUserNumber) {
+        socket.emit("room full");
+        return;
+      }
+      users[channelId].push(socket.id);
+    } else {
+      users[channelId] = [socket.id];
+    }
+    // console.log(users);
+    socketToRoom[socket.id] = channelId;
+    const usersInThisRoom = users[channelId].filter((id) => id !== socket.id);
+    // const usersInThisRoom = users[channelId];
+    console.log("usersInThisRoom", usersInThisRoom);
+    socket.emit("all users", usersInThisRoom);
+    // voiceChatNamespace.to(channelId).emit("all users", usersInThisRoom);
+
+    // voiceChatNamespace.emit("all users", usersInThisRoom);
   });
 
-  socket.on("leaveVoiceChannel", ({ channelId, userId }) => {
-    socket.leave(channelId);
-    console.log(`用户 ${userId} 离开语音频道: ${channelId}`);
-    voiceChatNamespace.to(channelId).emit("userLeft", userId);
+  // socket.on("leaveVoiceChannel", ({ channelId, userId }) => {
+  //   socket.leave(channelId);
+  //   console.log(`用户 ${userId} 离开语音频道: ${channelId}`);
+  //   voiceChatNamespace.to(channelId).emit("userLeft", userId);
+  // });
+
+  socket.on("offer", (payload) => {
+    console.log("payload in offer", payload.userToSignal);
+    voiceChatNamespace.to(payload.userToSignal).emit("user joined", {
+      signal: payload.signal,
+      callerID: payload.callerID,
+    });
   });
 
-  // WebRTC 信令
-  socket.on("offer", (data) => {
-    // console.log("received offer");
-    console.log(data.channelId);
-    socket.to(data.channelId).emit("offer", data.offer);
-    // socket.emit("offer", data.offer);
-  });
-
-  socket.on("answer", (data) => {
-    console.log("received answer");
-    console.log(data.channelId);
-    socket.to(data.channelId).emit("answer", data.answer);
-  });
-
-  socket.on("ice-candidate", (data) => {
-    console.log("ice-candidate");
-    socket.to(data.channelId).emit("ice-candidate", data);
+  socket.on("answer", (payload) => {
+    console.log("payload in answer");
+    voiceChatNamespace.to(payload.callerID).emit("receiving returned signal", {
+      signal: payload.signal,
+      id: socket.id,
+    });
   });
 
   socket.on("disconnect", () => {
-    console.log(`🛑 语音聊天断开: ${socket.id}`);
+    const channelId = socketToRoom[socket.id];
+    let room = users[channelId];
+    if (room) {
+      room = room.filter((id) => id !== socket.id);
+      users[channelId] = room;
+    }
+    socket.broadcast.emit("user left", socket.id);
+  });
+
+  socket.on("change", (payload) => {
+    socket.broadcast.emit("change", payload);
   });
 });
 
@@ -103,17 +129,3 @@ mongoose
 
 const PORT = process.env.PORT || 5555;
 server.listen(PORT, () => console.log(`服务器运行在端口 ${PORT}`));
-
-const leaveVoiceChannel = async () => {
-  const channel = await Channel.findById(channelId);
-  if (!channel) return res.status(404).json({ message: "频道未找到" });
-
-  if (channel.type !== "voice") {
-    return res.status(400).json({ message: "此频道不是语音频道" });
-  }
-
-  channel.participants = channel.participants?.filter(
-    (id) => id.toString() !== userId
-  );
-  await channel.save();
-};

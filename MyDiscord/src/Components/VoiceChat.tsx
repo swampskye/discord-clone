@@ -160,6 +160,12 @@ const VoiceChat = ({ channelId }) => {
     // console.log("my socket id:", socketRef.current.id);
     createStream();
     console.log("peers:", peers);
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        console.log("🔌 已断开 voice 命名空间连接");
+      }
+    };
   }, []);
 
   function createStream() {
@@ -168,38 +174,51 @@ const VoiceChat = ({ channelId }) => {
       .then((stream) => {
         userVideo.current.srcObject = stream;
         socketRef.current.emit("join room", channelId);
+        // for new user to create peer
         socketRef.current.on("all users", (users) => {
           console.log("all users:", users);
-          const peers = [];
+          const newPeers = [];
           users.forEach((userID) => {
+            console.log("createPeer");
             const peer = createPeer(userID, socketRef.current.id, stream);
             console.log("socketRef.current.id:", socketRef.current.id);
             peersRef.current.push({
               peerID: userID,
               peer,
             });
-            peers.push({
+            newPeers.push({
               peerID: userID,
               peer,
             });
           });
-          setPeers(peers);
+          setPeers(newPeers);
         });
+        // for current users to add peer
         socketRef.current.on("user joined", (payload) => {
+          console.log(
+            "======================user joined========================"
+          );
           console.log("==", payload);
+          console.log(payload.signal);
           const peer = addPeer(payload.signal, payload.callerID, stream);
           peersRef.current.push({
             peerID: payload.callerID,
             peer,
           });
+          console.log(peer);
+
           const peerObj = {
             peer,
             peerID: payload.callerID,
           };
+          // console.log(peersRef.current === peerObj);
+          // console.log("peers:", peers);
+          // console.log("peerobj:", peerObj);
+          // console.log("peersRef.current:", peersRef.current);
           setPeers((users) => [...users, peerObj]);
         });
 
-        socketRef.current.on("user left", (id) => {
+        socketRef.current!.on("user left", (id) => {
           const peerObj = peersRef.current.find((p) => p.peerID === id);
           if (peerObj) {
             peerObj.peer.destroy();
@@ -209,14 +228,20 @@ const VoiceChat = ({ channelId }) => {
           setPeers(peers);
         });
 
-        socketRef.current.on("receiving returned signal", (payload) => {
-          const item = peersRef.current.find((p) => p.peerID === payload.id);
+        socketRef.current!.on("receiving returned signal", (payload) => {
+          const item = peersRef.current.find(
+            (p: any) => p.peerID === payload.id
+          );
+          console.log(
+            "----------------item in receiving returned signal-------------"
+          );
+          console.log(item);
           item.peer.signal(payload.signal);
         });
 
-        socketRef.current.on("change", (payload) => {
-          setUserUpdate(payload);
-        });
+        // socketRef.current!.on("change", (payload) => {
+        //   setUserUpdate(payload);
+        // });
       });
   }
 
@@ -225,6 +250,16 @@ const VoiceChat = ({ channelId }) => {
       initiator: true,
       trickle: false,
       stream,
+      config: {
+        iceServers: [
+          {
+            urls: "stun:stun.l.google.com:19302", // Google 提供的公共 STUN 服务器
+          },
+          // {
+          //   urls: "stun:stun.services.mozilla.com", // Mozilla 提供的 STUN 服务器
+          // },
+        ],
+      },
     });
 
     peer.on("signal", (signal) => {
@@ -243,9 +278,20 @@ const VoiceChat = ({ channelId }) => {
       initiator: false,
       trickle: false,
       stream,
+      config: {
+        iceServers: [
+          {
+            urls: "stun:stun.l.google.com:19302", // Google 提供的公共 STUN 服务器
+          },
+          // {
+          //   urls: "stun:stun.services.mozilla.com", // Mozilla 提供的 STUN 服务器
+          // },
+        ],
+      },
     });
 
     peer.on("signal", (signal) => {
+      console.log("signal");
       socketRef.current.emit("answer", { signal, callerID });
     });
 
@@ -258,15 +304,21 @@ const VoiceChat = ({ channelId }) => {
     const ref = useRef(null);
 
     useEffect(() => {
+      console.log("peer in Video component:", props.peer);
       props.peer.on("stream", (stream) => {
         console.log("remote stream:", stream);
-        ref.current.srcObject = stream;
+        if (ref.current) {
+          ref.current!.srcObject = stream;
+        }
+      });
+
+      props.peer.on("error", (err) => {
+        console.log("Error in peer connection:", err);
       });
     }, []);
 
     return (
       <div>
-        <h1>user</h1>
         <video
           style={{ width: "100px" }}
           ref={ref}
@@ -289,21 +341,11 @@ const VoiceChat = ({ channelId }) => {
       <video style={{ width: "100px" }} ref={userVideo} autoPlay muted />
       <h1>remote</h1>
       {peers.map((peer: any, index) => {
-        console.log("peer in peers:", peer);
-        // let audioFlagTemp = true;
-        // let videoFlagTemp = true;
-        // if (userUpdate) {
-        //   userUpdate.forEach((entry) => {
-        //     if (peer && peer.peerID && peer.peerID === entry.id) {
-        //       audioFlagTemp = entry.audioFlag;
-        //       videoFlagTemp = entry.videoFlag;
-        //     }
-        //   });
-        // }
         return (
-          <div key={peer.peerID}>
+          <div key={index}>
             <h1>{peer.peerID}</h1>
             <Video peer={peer.peer} />
+            {/* <video style={{ width: "100px" }} ref={userVideo} autoPlay /> */}
           </div>
         );
       })}
