@@ -21,10 +21,14 @@ jobs:
 
     - name: Install frontend dependencies
       working-directory: ./MyDiscord
+      run: ls
+      run: pwd
       run: npm install
 
     - name: Build frontend
       working-directory: ./MyDiscord
+      run: ls
+      run: pwd
       run: npm run build
 
     - name: Deploy on Github Pages
