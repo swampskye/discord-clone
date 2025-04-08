@@ -1,29 +1,34 @@
-name: CICD
+# .github/workflows/deploy.yml
+name: Build and Deploy
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
-permissions: 
-  contents: write
-
-jobs: 
-  npm-build:
-    name: My-npm-build
+jobs:
+  build-and-deploy:
     runs-on: ubuntu-latest
-  
+
     steps:
-    - name: My-read-from-repo
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: My-npm-install&npm-run-build
-      run:
-        npm i
-        npm run build
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
 
-    - name:
+    - name: Install frontend dependencies
+      working-directory: ./MyDiscord
+      run: npm install
+
+    - name: Build frontend
+      working-directory: ./MyDiscord
+      run: npm run build
+
+    - name: Deploy on Github Pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
-        branches: gh-pages
+        branch: gh-pages
         folder: build
-    
