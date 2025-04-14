@@ -12,7 +12,7 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(403).json({ message: "无效 Token" });
+    res.status(401).json({ message: "无效 Token" });
   }
 };
 

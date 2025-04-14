@@ -42,8 +42,18 @@ router.post("/login", async (req, res) => {
 
     // 生成 JWT
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "15m",
     });
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    user.refreshToken = refreshToken;
+    await user.save();
 
     // 发送 token
     res.cookie("token", token, {
@@ -51,9 +61,15 @@ router.post("/login", async (req, res) => {
       secure: true,
       sameSite: "strict",
     });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
     res.json({
       message: "登录成功",
       token,
+      refreshToken,
       user: { username: user.username, email: user.email },
     });
   } catch (error) {
@@ -62,11 +78,63 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/me", authMiddleware, async (req, res) => {
-  // console.log(req.cookies);
-  const token = req.cookies.token;
-  // console.log("authMiddleware");
+  // const token = req.cookies.token;
   const user = await User.findById(req.user.userId).select("-passwordHash");
   res.json(user);
+});
+
+// ---------- 刷新 --------------------------------------------------
+router.post("/refresh", async (req, res) => {
+  const oldRefresh = req.cookies.refreshToken;
+  if (!oldRefresh)
+    return res.status(401).json({ message: "缺少 refreshToken" });
+
+  try {
+    const payload = jwt.verify(oldRefresh, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(payload.userId);
+    if (!user || user.refreshToken !== oldRefresh)
+      return res.status(403).json({ message: "无效 refreshToken" });
+    // 生成并轮换
+    const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15m",
+    });
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+    user.refreshToken = refreshToken; // 覆盖旧值
+    await user.save();
+
+    const cookieOpts = { httpOnly: true, secure: true, sameSite: "strict" };
+    res.cookie("token", accessToken, cookieOpts);
+    res.cookie("refreshToken", refreshToken, {
+      ...cookieOpts,
+      // path: "/api/auth/refresh",
+    });
+    console.log(7);
+
+    res.json({ accessToken, refreshToken });
+  } catch {
+    res.status(403).json({ message: "refreshToken 已失效" });
+  }
+});
+
+router.post("/logout", async (req, res) => {
+  const rt = req.cookies.refreshToken;
+  if (rt) {
+    try {
+      const { userId } = jwt.verify(rt, process.env.JWT_REFRESH_SECRET);
+      await User.findByIdAndUpdate(userId, { refreshToken: "" });
+    } catch {}
+  }
+
+  // 清 cookie
+  res.clearCookie("token");
+  res.clearCookie("refreshToken");
+  res.json({ message: "已登出" });
 });
 
 export default router;
