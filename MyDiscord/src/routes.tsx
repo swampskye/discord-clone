@@ -8,6 +8,7 @@ import CreateServer from "./Components/CreateServer";
 import CreateChannel from "./Components/CreateChannel";
 import Server from "./Components/Server";
 import Join from "./Components/Join";
+import Welcome from "./Components/Welcome";
 
 const routes = [
   {
@@ -22,6 +23,7 @@ const routes = [
     path: "/home",
     element: <DiscordLayout />,
     children: [
+      { index: true, element: <Welcome /> },
       {
         path: "server/:serverId",
         element: <Server />,

@@ -1,4 +1,4 @@
-import { Button, Input, message } from "antd";
+import { Button, Card, Input, message } from "antd";
 import { useState } from "react";
 import { useLocation, useOutlet, useParams } from "react-router-dom";
 import axios from "axios";
@@ -28,20 +28,33 @@ const Server = () => {
     return outlet;
   } else {
     return (
-      <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         {messageContext}
-        <h1>Server-{serverId}</h1>
-        <Button type="primary" onClick={generateInvite}>
-          Generate Invite Code
-        </Button>
-        {inviteCode && (
-          <h1>
-            <Input
-              value={`http://localhost:5173/join/${inviteCode}`}
-              readOnly
-            />
-          </h1>
-        )}
+        <Card
+          title="Server Info"
+          variant="outlined"
+          hoverable={true}
+          style={{ width: "40vw" }}
+        >
+          <h1>Server ID: {serverId}</h1>
+          <Button type="primary" onClick={generateInvite}>
+            Generate Invite Code
+          </Button>
+          {inviteCode && (
+            <h1>
+              <Input
+                value={`http://localhost:5173/join/${inviteCode}`}
+                readOnly
+              />
+            </h1>
+          )}
+        </Card>
       </div>
     );
   }

@@ -33,24 +33,24 @@ const Room = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
+        height: "80vh",
         justifyContent: "space-between",
       }}
     >
       {/* Voice Chat Component */}
-      {channelType === "voice" ? (
+      {/* {channelType === "voice" ? (
         <VoiceChat channelId={channelId} />
       ) : (
         <h1>Text Channel</h1>
-      )}
+      )} */}
       <h2 style={{ textAlign: "center" }}>Channel-{channelId}</h2>
       {/* Text Chat Component */}
-      {/* <div>
+      <div>
         <div
           ref={messageListRef}
           style={{
             overflowY: "auto",
-            height: "60vh",
+            height: "80vh",
             border: "2px solid #aaa",
             borderRadius: "10px",
             padding: "10px",
@@ -65,7 +65,7 @@ const Room = () => {
         <div style={{ margin: "20px" }}>
           <SendMessage channelId={channelId || "defaultChannelId"} />
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

@@ -13,6 +13,8 @@ const Login = () => {
         { withCredentials: true }
       );
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", res.data.user.username);
+      localStorage.setItem("email", res.data.user.email);
       message.success("Login Successfully");
       navigate("/home");
     } catch (error: any) {
